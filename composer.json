@@ -48,7 +48,7 @@
         "guzzlehttp/guzzle"         : "^7.10" ,
         "php-di/php-di"             : "^7.0" ,
         "psr/container"             : "^2.0" ,
-        "oihana/php-arango"         : "dev-main" ,
+        "oihana/php-commands"       : "dev-main" ,
         "oihana/php-core"           : "dev-main" ,
         "oihana/php-enums"          : "dev-main" ,
         "oihana/php-exceptions"     : "dev-main" ,

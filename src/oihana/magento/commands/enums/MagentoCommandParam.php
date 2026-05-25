@@ -2,17 +2,39 @@
 
 namespace oihana\magento\commands\enums;
 
-use oihana\arango\commands\enums\traits\DocumentsCommandParamTrait;
+use oihana\commands\enums\traits\CommandParamTrait;
+use oihana\reflect\traits\ConstantsTrait;
 
 /**
- * The trait to defines the constants of the Magento commands.
+ * The enumeration of the Magento command parameters.
+ *
+ * Aggregates the common command parameters from {@see CommandParamTrait}
+ * (`BATCH_SIZE`, `DESCRIPTION`, `HELP`, …) and adds Magento-specific
+ * keys (`MAGENTO`) plus the document-oriented keys (`DOCUMENTS`, `FIELDS`,
+ * `REMOVE_KEYS`) consumed by harvest commands.
  */
 class MagentoCommandParam
 {
-    use DocumentsCommandParamTrait;
+    use ConstantsTrait,
+        CommandParamTrait ;
+
+    /**
+     * The 'documents' parameter.
+     */
+    public const string DOCUMENTS = 'documents' ;
+
+    /**
+     * The 'fields' parameter.
+     */
+    public const string FIELDS = 'fields' ;
 
     /**
      * The 'magento' parameter.
      */
     public const string MAGENTO = 'magento' ;
+
+    /**
+     * The 'removeKeys' parameter.
+     */
+    public const string REMOVE_KEYS = 'removeKeys' ;
 }
