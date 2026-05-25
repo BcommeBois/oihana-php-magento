@@ -2,7 +2,7 @@
 
 ![Oihana PHP Magento](https://raw.githubusercontent.com/BcommeBois/oihana-php-magento/main/assets/images/oihana-php-magento-logo-inline-512x160.png)
 
-Composable PHP client for the [Magento 2](https://business.adobe.com/products/magento/magento-commerce.html) REST API. Part of the **Oihana PHP** ecosystem, this package bundles an OAuth1-signed HTTP client (Guzzle), typed Magento entity schemas, composable client traits, a fluent `SearchCriteria` builder, and persistence-friendly DTOs — everything you need to integrate a Magento storefront end-to-end.
+Composable PHP client for the [Magento 2](https://business.adobe.com/products/magento/magento-commerce.html) REST API. Part of the **Oihana PHP** ecosystem, this package bundles an OAuth1-signed HTTP client (Guzzle), typed Magento entity schemas, composable client traits, and a fluent `SearchCriteria` builder — the building blocks to query the Magento 2 REST API from PHP.
 
 [![Latest Version](https://img.shields.io/packagist/v/oihana/php-magento.svg?style=flat-square)](https://packagist.org/packages/oihana/php-magento)
 [![Total Downloads](https://img.shields.io/packagist/dt/oihana/php-magento.svg?style=flat-square)](https://packagist.org/packages/oihana/php-magento)
@@ -27,8 +27,7 @@ composer require oihana/php-magento
 - **Talk to Magento 2 over REST** through a ready-to-use HTTP client built on Guzzle — OAuth1 signed requests (consumer key + secret + access token + secret) with automatic nonce + timestamp generation, HMAC-SHA1 / HMAC-SHA256 signatures, and proper RFC 5849 query/body parameter handling.
 - **Build search criteria fluently** — the `SearchCriteria` helper turns `(field, value, condition, group, sortOrder, pageSize, currentPage)` tuples into the verbose `searchCriteria[filter_groups][...]` query parameters Magento expects.
 - **Hydrate typed entities** — `Product`, `ProductImage`, `MediaGalleryEntry`, `ProductVideo`, `ProductMediaGalleryEntriesContent` and friends, with field-aware `HydrateWith` attributes for nested objects.
-- **Harvest product media** — composable `MagentoProductsTrait` exposes products and media-gallery operations on top of the client; the `MediaType` and `ProductImageThumbnail` enums make image-role logic explicit.
-- **Plug it anywhere** — the client is a thin wrapper around Guzzle, no framework lock-in. Pair it with `oihana/php-arango` to persist harvested products into ArangoDB, or with any other storage backend.
+- **Access product media gallery** — composable `MagentoProductsTrait` exposes products and media-gallery operations on top of the client; the `MediaType` and `ProductImageThumbnail` enums make image-role logic explicit.
 
 ### Under the hood
 
@@ -75,7 +74,6 @@ Licensed under the [Mozilla Public License 2.0 (MPL‑2.0)](https://www.mozilla.
 
 | Package | Description |
 | --- | --- |
-| [oihana/php-arango](https://github.com/BcommeBois/oihana-php-arango) | Composable toolkit for ArangoDB — document/edge models, AQL helpers, controllers. |
 | [oihana/php-auth](https://github.com/BcommeBois/oihana-php-auth) | Casbin RBAC + JWT/OIDC authorization toolkit. |
 | [oihana/php-core](https://github.com/BcommeBois/oihana-php-core) | Core helpers and utilities shared across the ecosystem. |
 | [oihana/php-enums](https://github.com/BcommeBois/oihana-php-enums) | Typed constants and enums — no more magic strings. |

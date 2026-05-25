@@ -1,7 +1,7 @@
 {
     "name" : "oihana/php-magento" ,
     "type" : "library" ,
-    "description" : "Composable PHP client for the Magento 2 REST API. Bundles an OAuth1-signed HTTP client (Guzzle), typed Magento entity schemas (Product, ProductImage, MediaGalleryEntry, ...), composable client traits, and a fluent SearchCriteria builder. ArangoDB-friendly persistence layer." ,
+    "description" : "Composable PHP client for the Magento 2 REST API. Bundles an OAuth1-signed HTTP client (Guzzle), typed Magento entity schemas (Product, ProductImage, MediaGalleryEntry, ...), composable client traits, and a fluent SearchCriteria builder." ,
     "keywords" : [
         "php" ,
         "magento" ,

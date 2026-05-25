@@ -68,26 +68,8 @@ if ( in_array( MagentoImageRole::THUMBNAIL , $entry->types , true ) )
 | [`MediaType`](../../src/oihana/magento/schema/enums/MediaType.php) | `image`, `external-video` — type d'une `MediaGalleryEntry` |
 | [`ProductImageThumbnail`](../../src/oihana/magento/schema/enums/ProductImageThumbnail.php) | Tailles de miniature standard |
 
-## Persistance — exemple ArangoDB
-
-`oihana/php-magento` ne persiste rien par lui-même. Mais comme les entités sont des classes PHP standard, on peut les passer à `oihana/php-arango` pour les stocker en base documentaire :
-
-```php
-use oihana\arango\models\Documents ;
-use oihana\magento\schema\Product ;
-
-$products = new Documents( $container , [ /* ... */ ] ) ;
-
-$raw       = $client->getProduct( 'SKU-12345' ) ;
-$product   = $client->hydrate( $raw , Product::class ) ;
-$persisted = $products->upsert( (array) $product ) ;
-```
-
-C'est le pattern typique d'une commande `magento:harvest:products` côté application hôte.
-
 ## Voir aussi
 
 - [Démarrage rapide](getting-started.md) — installation et premier appel.
 - [SearchCriteria](search-criteria.md) — construction des filtres + pagination.
 - [oihana/php-reflect](https://github.com/BcommeBois/oihana-php-reflect) — couche d'hydratation utilisée par `ReflectionTrait::hydrate()`.
-- [oihana/php-arango](https://github.com/BcommeBois/oihana-php-arango) — persistance ArangoDB.
