@@ -1,0 +1,71 @@
+{
+    "name" : "oihana/php-magento" ,
+    "type" : "library" ,
+    "description" : "Composable PHP client for the Magento 2 REST API. Bundles an OAuth1-signed HTTP client (Guzzle), typed Magento entity schemas (Product, ProductImage, MediaGalleryEntry, ...), composable client traits, and a fluent SearchCriteria builder. ArangoDB-friendly persistence layer." ,
+    "keywords" : [
+        "php" ,
+        "magento" ,
+        "magento2" ,
+        "rest-api" ,
+        "oauth1" ,
+        "ecommerce" ,
+        "guzzle" ,
+        "client" ,
+        "search-criteria",
+        "media-gallery"
+    ] ,
+    "homepage" : "https://github.com/BcommeBois/oihana-php-magento" ,
+    "license" : "MPL-2.0" ,
+    "authors" : [
+        {
+            "name"     : "Marc Alcaraz" ,
+            "email"    : "marc@ooop.fr" ,
+            "homepage" : "https://www.ooop.fr" ,
+            "role"     : "Project Founder, Lead Developer."
+        }
+    ] ,
+    "support" : {
+        "email"  : "marc@ooop.fr" ,
+        "issues" : "https://github.com/BcommeBois/oihana-php-magento/issues" ,
+        "source" : "https://github.com/BcommeBois/oihana-php-magento"
+    } ,
+    "scripts" : {
+        "doc"  : "rm -rf docs && mkdir docs && cp -r assets docs/assets && ./vendor/bin/phpdoc -c phpdoc.xml -v" ,
+        "test" : "./vendor/bin/phpunit"
+    } ,
+    "autoload" : {
+        "psr-4" : {
+            "oihana\\magento\\" : "src/oihana/magento"
+        }
+    } ,
+    "autoload-dev" : {
+        "psr-4" : {
+            "tests\\oihana\\magento\\" : "tests/oihana/magento"
+        }
+    } ,
+    "require" : {
+        "php"                       : ">=8.4" ,
+        "guzzlehttp/guzzle"         : "^7.10" ,
+        "php-di/php-di"             : "^7.0" ,
+        "psr/container"             : "^2.0" ,
+        "oihana/php-arango"         : "dev-main" ,
+        "oihana/php-core"           : "dev-main" ,
+        "oihana/php-enums"          : "dev-main" ,
+        "oihana/php-exceptions"     : "dev-main" ,
+        "oihana/php-files"          : "dev-main" ,
+        "oihana/php-reflect"        : "dev-main" ,
+        "oihana/php-system"         : "dev-main"
+    } ,
+    "require-dev" : {
+        "phpunit/phpunit"        : "^12" ,
+        "nunomaduro/collision"   : "^8.8" ,
+        "phpdocumentor/shim"     : "^3.8"
+    } ,
+    "minimum-stability" : "dev" ,
+    "prefer-stable" : true ,
+    "config" : {
+        "allow-plugins" : {
+            "phpdocumentor/shim" : true
+        }
+    }
+}
