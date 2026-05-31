@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `traits/MagentoClientTrait.php` — `execute()` now builds a single absolute URL (via `joinPaths`) for both OAuth signing and the actual request. Previously the signed URL (`baseUri . endpoint`) could diverge from the URL Guzzle resolved against `base_uri` (RFC 3986), breaking the signature when `baseUri` lacked a trailing slash or the endpoint had a leading one.
+- `traits/MagentoProductsTrait.php` — `getProductsSince()` silently dropped its date filter: `filter_groups` was wrapped in an anonymous nested array instead of being a direct `searchCriteria` key, so `SearchCriteria` ignored it and the method returned all products. The filter is now applied as a single group matching `created_at >= since` OR `updated_at >= since`.
+- `traits/MagentoProductsTrait.php` — `getProductsSince()` now throws `InvalidArgumentException` when `since` is missing or empty, instead of silently defaulting to the current date/time.
 - `traits/MagentoClientTrait.php` — `call()` passed `$method` and `$endpoint` to `execute()` in the wrong order, causing every request routed through `call()` to target the wrong URL.
 - `traits/MagentoClientTrait.php` — `call()` now tests `$data !== null` instead of a truthy check, so a falsy-but-valid JSON body (`0`, `'0'`, `[]`, `false`) is no longer silently dropped.
 

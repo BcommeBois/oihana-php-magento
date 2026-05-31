@@ -2,6 +2,8 @@
 
 namespace oihana\magento\traits;
 
+use InvalidArgumentException;
+use oihana\magento\schema\constants\MagentoProp;
 use ReflectionException;
 
 use DateInvalidTimeZoneException;
@@ -119,11 +121,14 @@ trait MagentoProductsTrait
      * Retrieves products created or updated since a given date.
      *
      * @param array $init = []
-     *   - since   : Date in format "Y-m-d H:i:s" - The method try to format the date.
-     *   - schema : The optional class to map the documents.
+     *   - since  : Required. Non-empty date string (default format "Y-m-d H:i:s") used as the
+     *              lower bound for `created_at` / `updated_at`.
+     *   - format : Optional. The date format used to parse `since` (default "Y-m-d H:i:s").
+     *   - schema : Optional. The class used to map the returned documents.
      *
      * @return array|null
      *
+     * @throws InvalidArgumentException     If `since` is missing or not a non-empty string.
      * @throws Error401
      * @throws Error404
      * @throws GuzzleException
@@ -134,33 +139,40 @@ trait MagentoProductsTrait
      */
     public function getProductsSince( array $init = [] ) : ?array
     {
-        $format = $init[ MagentoParam::FORMAT ] ?? 'Y-m-d H:i:s'  ;
-        $since  = formatDateTime( $init[ MagentoParam::SINCE ] , format:$format ) ;
+        $since = $init[ MagentoParam::SINCE ] ?? null ;
 
+        if ( !is_string( $since ) || trim( $since ) === '' )
+        {
+            throw new InvalidArgumentException
+            (
+                "getProductsSince() requires a non-empty 'since' date value."
+            ) ;
+        }
+
+        $format = $init[ MagentoParam::FORMAT ] ?? 'Y-m-d H:i:s' ;
+        $since  = formatDateTime( $since , format: $format ) ;
+
+        // A single filter group with two filters : within a group Magento applies OR,
+        // so this matches products created_at >= since OR updated_at >= since.
+        // FILTER_GROUPS must be a direct key of searchCriteria (not an anonymous nested
+        // array), otherwise SearchCriteria drops it and no date filter is applied.
         $init[ MagentoParam::SEARCH_CRITERIA ] =
         [
             ...( $init[ MagentoParam::SEARCH_CRITERIA ] ?? [] ) ,
+            SearchCriteriaParam::FILTER_GROUPS =>
             [
-                SearchCriteriaParam::FILTER_GROUPS =>
                 [
+                    SearchCriteriaParam::FILTERS =>
                     [
-                        SearchCriteriaParam::FILTERS =>
                         [
-                            [
-                                SearchCriteriaParam::FIELD          => 'created_at' ,
-                                SearchCriteriaParam::VALUE          => $since ,
-                                SearchCriteriaParam::CONDITION_TYPE => ConditionType::GTEQ
-                            ]
-                        ]
-                    ], // OR
-                    [
-                        SearchCriteriaParam::FILTERS =>
+                            SearchCriteriaParam::FIELD          => MagentoProp::CREATED_AT ,
+                            SearchCriteriaParam::VALUE          => $since ,
+                            SearchCriteriaParam::CONDITION_TYPE => ConditionType::GTEQ
+                        ] ,
                         [
-                            [
-                                SearchCriteriaParam::FIELD          => 'updated_at' ,
-                                SearchCriteriaParam::VALUE          => $since,
-                                SearchCriteriaParam::CONDITION_TYPE => ConditionType::GTEQ
-                            ]
+                            SearchCriteriaParam::FIELD          => MagentoProp::UPDATED_AT ,
+                            SearchCriteriaParam::VALUE          => $since ,
+                            SearchCriteriaParam::CONDITION_TYPE => ConditionType::GTEQ
                         ]
                     ]
                 ]

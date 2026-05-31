@@ -28,6 +28,8 @@ use oihana\reflect\traits\ReflectionTrait;
 
 use oihana\magento\enums\Magento;
 
+use function oihana\files\path\joinPaths;
+
 trait MagentoClientTrait
 {
     /**
@@ -151,7 +153,12 @@ trait MagentoClientTrait
         {
             try
             {
-                $url = $this->baseUri . $endpoint ;
+                // Build one absolute URL used both for signing and for the request, so the
+                // OAuth base string always matches the URL actually called. Guzzle resolves a
+                // relative endpoint against base_uri per RFC 3986, which can diverge from a
+                // naive baseUri.endpoint concatenation (missing/extra slashes) and break the
+                // signature. Passing an absolute URL bypasses that resolution.
+                $url = joinPaths( $this->baseUri , $endpoint ) ;
 
                 $signatureParams = [];
                 if ( $method === HttpMethod::GET && isset( $options[ MagentoParam::QUERY ] ) )
@@ -168,7 +175,7 @@ trait MagentoClientTrait
 
                 $options[ MagentoOption::HEADERS ][ HttpHeader::AUTHORIZATION ] = $authHeader ;
 
-                $response = $this->client->request( $method , $endpoint , $options ) ;
+                $response = $this->client->request( $method , $url , $options ) ;
 
                 $statusCode   = $response->getStatusCode() ;
                 $responseBody = $response->getBody()->getContents() ;

@@ -88,6 +88,38 @@ class MagentoClientTraitTest extends TestCase
     }
 
     /**
+     * The URL is built once (via `joinPaths`) and used both for OAuth signing
+     * and for the actual request. A `baseUri` without a trailing slash must
+     * still resolve to the full path — not Guzzle's RFC 3986 last-segment
+     * replacement (`/rest/products`) nor a naive concatenation
+     * (`/rest/V1products`). Either divergence would break the signature.
+     */
+    public function testBaseUriWithoutTrailingSlashStillTargetsFullPath() : void
+    {
+        $client = $this->makeClient
+        (
+            [ new Response( 200 , [] , '{}' ) ] ,
+            [ Magento::BASE_URI => 'https://shop.example.com/rest/V1' ]
+        ) ;
+
+        $client->call( 'products' , HttpMethod::GET ) ;
+
+        $this->assertSame( '/rest/V1/products' , $this->lastRequest()->getUri()->getPath() ) ;
+    }
+
+    /**
+     * An endpoint with a leading slash must not escape the base path.
+     */
+    public function testLeadingSlashEndpointStaysUnderBasePath() : void
+    {
+        $client = $this->makeClient( [ new Response( 200 , [] , '{}' ) ] ) ;
+
+        $client->call( '/products' , HttpMethod::GET ) ;
+
+        $this->assertSame( '/rest/V1/products' , $this->lastRequest()->getUri()->getPath() ) ;
+    }
+
+    /**
      * A falsy-but-valid JSON body (here `0`) must still be sent : the truthy
      * check used previously dropped it silently.
      */

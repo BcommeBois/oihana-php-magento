@@ -9,6 +9,8 @@ use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7\Response;
 
+use InvalidArgumentException;
+
 use PHPUnit\Framework\TestCase;
 
 use Psr\Http\Message\RequestInterface;
@@ -160,5 +162,49 @@ class MagentoProductsTraitTest extends TestCase
 
         $this->assertSame( 1 , $result[ 'total_count' ] ) ;
         $this->assertSame( 'A' , $result[ 'items' ][ 0 ][ 'sku' ] ) ;
+    }
+
+    /**
+     * `getProductsSince()` requires a `since` value : calling it without one
+     * must fail fast with an {@see InvalidArgumentException} rather than
+     * silently defaulting to "now".
+     */
+    public function testGetProductsSinceThrowsWhenSinceIsMissing() : void
+    {
+        $this->expectException( InvalidArgumentException::class ) ;
+
+        $client = $this->makeClient( [ new Response( 200 , [] , '{"items":[]}' ) ] ) ;
+        $client->getProductsSince() ;
+    }
+
+    /**
+     * An empty `since` string is rejected as well.
+     */
+    public function testGetProductsSinceThrowsWhenSinceIsEmpty() : void
+    {
+        $this->expectException( InvalidArgumentException::class ) ;
+
+        $client = $this->makeClient( [ new Response( 200 , [] , '{"items":[]}' ) ] ) ;
+        $client->getProductsSince( [ MagentoParam::SINCE => '   ' ] ) ;
+    }
+
+    /**
+     * With a valid `since`, the request carries the date filter as a single
+     * filter group holding both `created_at` and `updated_at` (OR semantics),
+     * using the `gteq` condition and the formatted date.
+     */
+    public function testGetProductsSinceBuildsCreatedAndUpdatedFilters() : void
+    {
+        $client = $this->makeClient( [ new Response( 200 , [] , '{"items":[]}' ) ] ) ;
+
+        $client->getProductsSince( [ MagentoParam::SINCE => '2026-01-15 10:30:00' ] ) ;
+
+        $query = urldecode( $this->lastRequest()->getUri()->getQuery() ) ;
+
+        // Both fields live in the SAME group (index 0) => OR within the group.
+        $this->assertStringContainsString( 'searchCriteria[filter_groups][0][filters][0][field]=created_at' , $query ) ;
+        $this->assertStringContainsString( 'searchCriteria[filter_groups][0][filters][1][field]=updated_at' , $query ) ;
+        $this->assertStringContainsString( '[condition_type]=gteq' , $query ) ;
+        $this->assertStringContainsString( '2026-01-15 10:30:00' , $query ) ;
     }
 }
