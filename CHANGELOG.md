@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `http/OAuthSigner.php` — OAuth nonce generation now delegates to the `oihana\core\encoding\randomHex()` helper (from `oihana/php-core`) instead of inlining `bin2hex( random_bytes() )`. Behaviour is unchanged (16 bytes → 32 lowercase hex chars, 128 bits of entropy).
+
 ### Added
 
 - Initial scaffold: Composer manifest, PHPUnit 12 + phpDocumentor 3 configuration, MPL-2.0 license, README, CHANGELOG, sibling-aligned folder layout (`src/`, `tests/`, `wiki/`, `assets/`).

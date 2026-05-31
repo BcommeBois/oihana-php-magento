@@ -6,7 +6,10 @@ use oihana\enums\HashAlgorithm;
 use oihana\enums\http\AuthScheme;
 use oihana\enums\http\OAuthParameters;
 use oihana\enums\http\OAuthSignatureMethod;
+
 use Random\RandomException;
+
+use function oihana\core\encoding\randomHex;
 
 /**
  * Utility class to generate OAuth 1.0a Authorization headers for HTTP requests.
@@ -90,7 +93,7 @@ class OAuthSigner
             OAuthParameters::OAUTH_TOKEN            => $this->accessToken ,
             OAuthParameters::OAUTH_SIGNATURE_METHOD => OAuthSignatureMethod::HMAC_SHA256 ,
             OAuthParameters::OAUTH_TIMESTAMP        => time() ,
-            OAuthParameters::OAUTH_NONCE            => bin2hex( random_bytes(16 ) ) ,
+            OAuthParameters::OAUTH_NONCE            => randomHex( 16 ) ,
             OAuthParameters::OAUTH_VERSION          => self::VERSION
         ];
 
