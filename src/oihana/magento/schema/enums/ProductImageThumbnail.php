@@ -2,14 +2,13 @@
 
 namespace oihana\magento\schema\enums;
 
-use oihana\magento\schema\Thing;
 use oihana\reflect\traits\ConstantsTrait;
 
 /**
  * The enumeration of the image thumbnail types.
  * @see https://developer.adobe.com/commerce/webapi/graphql-api/index.html#definition-ProductImageThumbnail
  */
-class ProductImageThumbnail extends Thing
+class ProductImageThumbnail
 {
     use ConstantsTrait ;
 

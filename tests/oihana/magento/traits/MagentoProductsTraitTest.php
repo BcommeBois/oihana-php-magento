@@ -20,6 +20,7 @@ use oihana\magento\enums\Magento;
 use oihana\magento\enums\MagentoParam;
 use oihana\magento\enums\SearchCriteriaParam;
 use oihana\magento\schema\Product;
+use oihana\magento\schema\ProductImage;
 use oihana\magento\utils\Fields;
 use oihana\magento\utils\SearchCriteria;
 
@@ -77,6 +78,26 @@ class MagentoProductsTraitTest extends TestCase
 
         $this->assertStringEndsWith( '/rest/V1/products/ABC' , $this->lastRequest()->getUri()->getPath() ) ;
         $this->assertSame( 'ABC' , $result[ 'sku' ] ) ;
+    }
+
+    /**
+     * `getProduct()` hydrates the document into the given schema, including
+     * nested entities declared with `#[HydrateWith]` (here `media_gallery`
+     * → {@see ProductImage}).
+     */
+    public function testGetProductHydratesIntoSchemaWithNestedEntities() : void
+    {
+        $client = $this->makeClient
+        (
+            [ new Response( 200 , [] , '{"sku":"ABC","media_gallery":[{"url":"http://img/1.jpg","label":"front"}]}' ) ]
+        ) ;
+
+        $product = $client->getProduct( 'ABC' , Product::class ) ;
+
+        $this->assertInstanceOf( Product::class , $product ) ;
+        $this->assertSame( 'ABC' , $product->sku ) ;
+        $this->assertContainsOnlyInstancesOf( ProductImage::class , $product->media_gallery ) ;
+        $this->assertSame( 'http://img/1.jpg' , $product->media_gallery[ 0 ]->url ) ;
     }
 
     /**
@@ -150,6 +171,20 @@ class MagentoProductsTraitTest extends TestCase
         $query = urldecode( $this->lastRequest()->getUri()->getQuery() ) ;
 
         $this->assertStringContainsString( 'fields=items[sku,name],total_count' , $query ) ;
+    }
+
+    /**
+     * A {@see Fields} instance is accepted for `fields` as well as a raw array.
+     */
+    public function testGetProductsAcceptsFieldsInstance() : void
+    {
+        $client = $this->makeClient( [ new Response( 200 , [] , '{"items":[]}' ) ] ) ;
+
+        $client->getProducts( [ MagentoParam::FIELDS => new Fields( 'items[sku],total_count' ) ] ) ;
+
+        $query = urldecode( $this->lastRequest()->getUri()->getQuery() ) ;
+
+        $this->assertStringContainsString( 'fields=items[sku],total_count' , $query ) ;
     }
 
     /**

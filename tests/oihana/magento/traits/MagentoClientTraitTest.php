@@ -133,6 +133,21 @@ class MagentoClientTraitTest extends TestCase
     }
 
     /**
+     * `call()` forwards its `$queryParams` onto the request query string.
+     */
+    public function testCallForwardsQueryParameters() : void
+    {
+        $client = $this->makeClient( [ new Response( 200 , [] , '{}' ) ] ) ;
+
+        $client->call( 'products' , HttpMethod::GET , null , [ 'page' => 2 , 'limit' => 50 ] ) ;
+
+        $query = urldecode( $this->lastRequest()->getUri()->getQuery() ) ;
+
+        $this->assertStringContainsString( 'page=2' , $query ) ;
+        $this->assertStringContainsString( 'limit=50' , $query ) ;
+    }
+
+    /**
      * A 2xx response body must be JSON-decoded into an associative array.
      */
     public function testExecuteDecodesJsonResponseOnSuccess() : void

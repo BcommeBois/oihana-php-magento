@@ -23,12 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `schema/enums/MediaType.php`, `schema/enums/ProductImageThumbnail.php` — no longer extend `Thing`; they are plain constant holders (`use ConstantsTrait`), consistent with `MagentoImageRole`. Removes the irrelevant `id`/`name`/`created_at`/`updated_at` properties and `JsonSerializable` they inherited.
 - `traits/MagentoClientTrait.php` — simplified `isConnected()` and removed redundant casts; completed/typed PHPDoc on `__construct`, `call`, `execute`, `initializeOauth`, `isConnected`.
 - `traits/MagentoProductsTrait.php` — simplified `getProducts()` search-criteria normalisation (removed redundant `instanceof` checks) and completed its PHPDoc.
 - `http/OAuthSigner.php` — OAuth nonce generation now delegates to the `oihana\core\encoding\randomHex()` helper (from `oihana/php-core`) instead of inlining `bin2hex( random_bytes() )`. Behaviour is unchanged (16 bytes → 32 lowercase hex chars, 128 bits of entropy).
 
 ### Added
 
+- Test coverage for the schema layer (`tests/oihana/magento/schema/ThingTest`) — constructor hydration, unknown-key handling, object input, `jsonSerialize`, `Product` inheritance — plus extra trait coverage: `getProduct()` schema hydration with nested `#[HydrateWith]` entities, `getProducts()` with a `Fields` instance, and `call()` query-parameter forwarding.
 - `traits/MagentoClientTrait.php` — the constructor now accepts an optional Guzzle `handler` (via `Magento::HANDLER`) in its `$init`, allowing a mock transport to be injected for testing or a custom transport in production.
 - Test suite for the client traits (`tests/oihana/magento/traits/`): `MagentoClientTraitTest` and `MagentoProductsTraitTest`, driving the traits through a Guzzle `MockHandler` (no live Magento instance required) — covering request routing, falsy JSON bodies, OAuth header signing, 401/404 mapping, retry/connection checks and `getProducts()` search-criteria/fields query building.
 - Initial scaffold: Composer manifest, PHPUnit 12 + phpDocumentor 3 configuration, MPL-2.0 license, README, CHANGELOG, sibling-aligned folder layout (`src/`, `tests/`, `wiki/`, `assets/`).

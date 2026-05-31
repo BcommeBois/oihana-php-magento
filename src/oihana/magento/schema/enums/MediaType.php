@@ -3,14 +3,13 @@
 namespace oihana\magento\schema\enums;
 
 use oihana\magento\schema\MediaGalleryEntry;
-use oihana\magento\schema\Thing;
 use oihana\reflect\traits\ConstantsTrait;
 
 /**
  * The enumeration of the image or video media types.
  * @see MediaGalleryEntry
  */
-class MediaType extends Thing
+class MediaType
 {
     use ConstantsTrait ;
 
