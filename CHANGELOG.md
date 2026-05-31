@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `traits/MagentoClientTrait.php` — the constructor now accepts an optional Guzzle `handler` (via `Magento::HANDLER`) in its `$init`, allowing a mock transport to be injected for testing or a custom transport in production.
+- Test suite for the client traits (`tests/oihana/magento/traits/`): `MagentoClientTraitTest` and `MagentoProductsTraitTest`, driving the traits through a Guzzle `MockHandler` (no live Magento instance required) — covering request routing, falsy JSON bodies, OAuth header signing, 401/404 mapping, retry/connection checks and `getProducts()` search-criteria/fields query building.
 - Initial scaffold: Composer manifest, PHPUnit 12 + phpDocumentor 3 configuration, MPL-2.0 license, README, CHANGELOG, sibling-aligned folder layout (`src/`, `tests/`, `wiki/`, `assets/`).
 - Source code under `src/oihana/magento/` (29 PHP files):
   - `MagentoClient.php` — entry-point Guzzle client with OAuth1 signing.

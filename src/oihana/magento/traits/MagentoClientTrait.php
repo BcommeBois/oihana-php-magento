@@ -36,7 +36,8 @@ trait MagentoClientTrait
      * @param Container $container The DI container used to resolve the logger.
      * @param array     $init      Optional configuration keyed by {@see Magento} constants:
      *                             `consumerKey`, `consumerSecret`, `token`, `tokenSecret`,
-     *                             `baseUri`, `maxRetries` and any logger options.
+     *                             `baseUri`, `maxRetries`, an optional Guzzle `handler`
+     *                             (useful for testing or custom transports) and any logger options.
      *
      * @throws DependencyException
      * @throws NotFoundException
@@ -50,8 +51,9 @@ trait MagentoClientTrait
 
         $this->maxRetries = $init[ Magento::MAX_RETRIES ] ?? 3 ;
         $this->baseUri    = $init[ Magento::BASE_URI    ] ?? '' ;
-        $this->client     = new Client
-        ([
+
+        $config =
+        [
             Magento::BASE_URI => $this->baseUri ,
             Magento::TIMEOUT  => 30 ,
             Magento::VERIFY   => true ,
@@ -60,7 +62,15 @@ trait MagentoClientTrait
                 HttpHeader::CONTENT_TYPE => FileMimeType::JSON ,
                 HttpHeader::ACCEPT       => FileMimeType::JSON ,
             ]
-        ]) ;
+        ];
+
+        // Optional Guzzle handler (e.g. a MockHandler stack) for testing or custom transports.
+        if ( isset( $init[ Magento::HANDLER ] ) )
+        {
+            $config[ Magento::HANDLER ] = $init[ Magento::HANDLER ] ;
+        }
+
+        $this->client = new Client( $config ) ;
     }
 
     use LoggerTrait ,

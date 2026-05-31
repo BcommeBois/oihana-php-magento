@@ -23,8 +23,8 @@ class Magento
     public const string BASE_URI = 'base_uri' ;
     public const string HANDLER  = 'handler'  ;
     public const string HEADERS  = 'headers'  ;
-    public const string TIMEOUT  = 'timeout'    ;
-    public const string VERIFY   = 'verify'    ;
+    public const string TIMEOUT  = 'timeout'  ;
+    public const string VERIFY   = 'verify'   ;
 
     // ------ Oauth1
 
