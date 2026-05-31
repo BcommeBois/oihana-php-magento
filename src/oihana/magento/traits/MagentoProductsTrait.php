@@ -65,8 +65,13 @@ trait MagentoProductsTrait
     /**
      * Retrieves a list of products.
      *
-     * @param array $init {
-     * @return mixed
+     * @param array $init Optional parameters keyed by {@see MagentoParam} constants:
+     *                    - `searchCriteria` : a {@see SearchCriteria} instance or an array of criteria.
+     *                    - `endpoint`       : the products resource endpoint (default `products`).
+     *                    - `fields`         : a {@see Fields} instance or an array of field definitions.
+     *                    - `schema`         : an optional class name used to hydrate each document.
+     *
+     * @return mixed The decoded product list, hydrated into `$schema` instances when provided.
      *
      * @throws Error401
      * @throws Error404
@@ -86,18 +91,16 @@ trait MagentoProductsTrait
         $schema   = $init[ MagentoParam::SCHEMA          ] ?? null ;
         $options  = [];
 
-        if ( is_array( $criteria ) )
+        if ( !( $criteria instanceof SearchCriteria ) )
         {
-            $criteria = new SearchCriteria($criteria);
+            $criteria = new SearchCriteria( is_array( $criteria ) ? $criteria : [] ) ;
         }
 
-        $criteria = $criteria instanceof SearchCriteria ? $criteria : new SearchCriteria() ;
+        $query = $criteria->get() ;
 
-        $query = $criteria instanceof SearchCriteria ? $criteria->get() : $criteria ;
-
-        if ( $fields instanceof Fields || (is_array($fields) && !empty($fields)))
+        if ( $fields instanceof Fields || ( is_array( $fields ) && !empty( $fields ) ) )
         {
-            $query[ MagentoParam::FIELDS ] = (string) ($fields instanceof Fields ? $fields : new Fields($fields));
+            $query[ MagentoParam::FIELDS ] = (string) ( $fields instanceof Fields ? $fields : new Fields( $fields ) ) ;
         }
 
         $options[ MagentoOption::QUERY ] = $query ;

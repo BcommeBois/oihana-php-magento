@@ -30,13 +30,14 @@ use oihana\magento\enums\Magento;
 
 trait MagentoClientTrait
 {
-    use LoggerTrait ,
-        ReflectionTrait ;
-
     /**
      * Creates a new MagentoClient instance.
-     * @param Container $container
-     * @param array $init
+     *
+     * @param Container $container The DI container used to resolve the logger.
+     * @param array     $init      Optional configuration keyed by {@see Magento} constants:
+     *                             `consumerKey`, `consumerSecret`, `token`, `tokenSecret`,
+     *                             `baseUri`, `maxRetries` and any logger options.
+     *
      * @throws DependencyException
      * @throws NotFoundException
      * @throws ContainerExceptionInterface
@@ -62,20 +63,24 @@ trait MagentoClientTrait
         ]) ;
     }
 
+    use LoggerTrait ,
+        ReflectionTrait ;
+
     /**
-     * @var int|mixed
+     * Maximum number of attempts for a transient (5xx / timeout) request.
+     * @var int
      */
     public int $maxRetries = 3 ;
 
     /**
      * Call a generic API endpoint.
      *
-     * @param string $endpoint
-     * @param string $method
-     * @param mixed|null $data
-     * @param array $queryParams
+     * @param string     $endpoint    The API endpoint (path relative to the base URI).
+     * @param string     $method      HTTP method to use (GET, POST, PUT, DELETE, …).
+     * @param mixed|null $data        Optional request body, sent as JSON when provided.
+     * @param array      $queryParams Optional query-string parameters.
      *
-     * @return mixed
+     * @return mixed The decoded JSON response, or null on failure.
      *
      * @throws Error401
      * @throws Error404
@@ -86,7 +91,7 @@ trait MagentoClientTrait
     {
         $options = [];
 
-        if ( $data )
+        if ( $data !== null )
         {
             $options[ MagentoOption::JSON ] = $data ;
         }
@@ -96,7 +101,7 @@ trait MagentoClientTrait
             $options[ MagentoOption::QUERY ] = $queryParams ;
         }
 
-        return $this->execute( $method , $endpoint , $options ) ;
+        return $this->execute( $endpoint , $method , $options ) ;
     }
 
     /**
@@ -113,15 +118,13 @@ trait MagentoClientTrait
      *   and stops further retries.
      *
      * Logging:
-     * - Warnings are issued for each failed attempt including HTTP status code and
-     *   exception messages.
-     * - Info logs provide details of the server response when available.
+     * - Warnings are issued for each failed attempt including the exception message.
      * - Notices indicate wait times between retries.
      * - Errors are logged when all retries fail.
      *
      * @param string $endpoint The API endpoint (path relative to the base URI).
-     * @param string $method HTTP method to use (GET, POST, etc.). Defaults to GET.
-     * @param array $options Request options for GuzzleHttp\Client (headers, query, json, etc.).
+     * @param string $method   HTTP method to use (GET, POST, etc.). Defaults to GET.
+     * @param array  $options  Request options for GuzzleHttp\Client (headers, query, json, etc.).
      *
      * @return mixed Returns the decoded JSON response as an associative array, or null on failure.
      *
@@ -210,8 +213,11 @@ trait MagentoClientTrait
     }
 
     /**
-     * Initialize the
-     * @param array $init
+     * Initializes the OAuth signer from the given configuration.
+     *
+     * @param array $init Configuration keyed by {@see Magento} constants: `consumerKey`, `consumerSecret`, `token`, `tokenSecret`.
+     *                    Missing keys default to an empty string.
+     *
      * @return $this
      */
     public function initializeOauth( array $init = [] ):static
@@ -227,8 +233,12 @@ trait MagentoClientTrait
     }
 
     /**
-     * Test the connection.
-     * @return bool Return true if the client is connected.
+     * Tests the connection by hitting a lightweight endpoint.
+     *
+     * @param string $endpoint The endpoint used for the probe (default `modules`).
+     *
+     * @return bool True if the request returned a decoded response, false otherwise.
+     *
      * @throws Error401
      * @throws Error404
      * @throws GuzzleException
@@ -236,12 +246,7 @@ trait MagentoClientTrait
      */
     public function isConnected( string $endpoint = 'modules' ):bool
     {
-        $result = $this->execute( $endpoint ) ;
-        if ( $result !== null )
-        {
-            return true;
-        }
-        return false;
+        return $this->execute( $endpoint ) !== null ;
     }
 
     // ----------- Private
