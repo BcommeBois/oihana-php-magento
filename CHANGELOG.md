@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- `traits/MagentoClientTrait.php` — removed commented-out debug `echo` statements in `execute()` that printed request options (including the signed `Authorization` header) and raw response bodies, preventing accidental leakage if re-enabled. Also removed the `info("Details: ...")` log of the raw 401 response body; the existing warning and the thrown `Error401` already convey the failure.
+
 ### Changed
 
 - `http/OAuthSigner.php` — OAuth nonce generation now delegates to the `oihana\core\encoding\randomHex()` helper (from `oihana/php-core`) instead of inlining `bin2hex( random_bytes() )`. Behaviour is unchanged (16 bytes → 32 lowercase hex chars, 128 bits of entropy).

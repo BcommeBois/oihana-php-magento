@@ -155,17 +155,10 @@ trait MagentoClientTrait
 
                 $options[ MagentoOption::HEADERS ][ HttpHeader::AUTHORIZATION ] = $authHeader ;
 
-                // echo 'URL     : ' . $url . PHP_EOL;
-                // echo 'Method  : ' . $method . PHP_EOL;
-                // echo 'Options : ' . json_encode( $options , JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES ) . PHP_EOL;
-
                 $response = $this->client->request( $method , $endpoint , $options ) ;
 
                 $statusCode   = $response->getStatusCode() ;
                 $responseBody = $response->getBody()->getContents() ;
-
-                // echo 'Status Code: '   . $statusCode . PHP_EOL;
-                // echo 'Response Body: ' . $responseBody . PHP_EOL;
 
                 if ( $statusCode >= 200 && $statusCode < 300 )
                 {
@@ -174,7 +167,6 @@ trait MagentoClientTrait
                 else
                 {
                     $this->warning( 'Non-success status code: ' . $statusCode ) ;
-                    // echo 'Non-success status code: ' . $statusCode . PHP_EOL ;
                     return null;
                 }
             }
@@ -182,14 +174,9 @@ trait MagentoClientTrait
             {
                 $attempts++ ;
 
-                $statusCode   = $e->hasResponse() ? $e->getResponse()->getStatusCode() : 0 ;
-                $responseBody = $e->hasResponse() ? $e->getResponse()->getBody()->getContents() : '';
+                $statusCode = $e->hasResponse() ? $e->getResponse()->getStatusCode() : 0 ;
 
                 $this->warning("API error (attempt $attempts/$this->maxRetries): " . $e->getMessage() ) ;
-
-                // echo "API error (attempt $attempts/$this->maxRetries): " . $e->getMessage() . PHP_EOL;
-                // echo "Status Code: " . $statusCode . PHP_EOL;
-                // echo "Response Body: " . $responseBody . PHP_EOL;
 
                 if ( $statusCode === 404 )
                 {
@@ -199,11 +186,6 @@ trait MagentoClientTrait
                 if ( $statusCode === 401 )
                 {
                     $this->warning( "OAuth authentication error - please check your tokens" ) ;
-                    if ( $e->hasResponse() )
-                    {
-                        $this->info( "Details: " . $e->getResponse()->getBody());
-                    }
-
                     throw new Error401( "OAuth authentication error - please check your tokens" ) ;
                 }
 
