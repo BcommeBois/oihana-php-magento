@@ -5,10 +5,12 @@ All notable changes to **oihana/php-magento** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.0] - 2026-05-31
 
 ### Fixed
 
+- `traits/HasMagentoClientTrait.php` — `$magento` is now nullable (`?MagentoClient`); resolving an absent/unknown service no longer raises a TypeError when assigning null.
+- `traits/MagentoProductsTrait.php` — `getProducts()` now hydrates only the envelope's `items` when a `schema` is given, instead of mapping over the whole response (`items`/`search_criteria`/`total_count`), which fed `hydrate()` an int and raised a TypeError.
 - `traits/MagentoClientTrait.php` — `execute()` now builds a single absolute URL (via `joinPaths`) for both OAuth signing and the actual request. Previously the signed URL (`baseUri . endpoint`) could diverge from the URL Guzzle resolved against `base_uri` (RFC 3986), breaking the signature when `baseUri` lacked a trailing slash or the endpoint had a leading one.
 - `traits/MagentoProductsTrait.php` — `getProductsSince()` silently dropped its date filter: `filter_groups` was wrapped in an anonymous nested array instead of being a direct `searchCriteria` key, so `SearchCriteria` ignored it and the method returned all products. The filter is now applied as a single group matching `created_at >= since` OR `updated_at >= since`.
 - `traits/MagentoProductsTrait.php` — `getProductsSince()` now throws `InvalidArgumentException` when `since` is missing or empty, instead of silently defaulting to the current date/time.

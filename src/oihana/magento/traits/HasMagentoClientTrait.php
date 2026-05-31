@@ -33,9 +33,9 @@ trait HasMagentoClientTrait
 {
     /**
      * The Magento client reference.
-     * @var MagentoClient
+     * @var MagentoClient|null
      */
-    public MagentoClient $magento ;
+    public ?MagentoClient $magento ;
 
     /**
      * The 'magento' parameter key.

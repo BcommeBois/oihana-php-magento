@@ -5,7 +5,7 @@ namespace oihana\magento\enums;
 use oihana\reflect\traits\ConstantsTrait;
 
 /**
- * Defines the possible values for Magento filter condition types, alphabetically.
+ * Defines the possible values for Magento filter condition types.
  * Useful to avoid hardcoding strings like 'eq', 'like', etc.
  */
 class ConditionType

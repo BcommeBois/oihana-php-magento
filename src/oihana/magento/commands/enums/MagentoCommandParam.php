@@ -11,7 +11,7 @@ use oihana\reflect\traits\ConstantsTrait;
  * Aggregates the common command parameters from {@see CommandParamTrait}
  * (`BATCH_SIZE`, `DESCRIPTION`, `HELP`, …) and adds Magento-specific
  * keys (`MAGENTO`) plus the document-oriented keys (`DOCUMENTS`, `FIELDS`,
- * `REMOVE_KEYS`) consumed by harvest commands.
+ * `REMOVE_KEYS`).
  */
 class MagentoCommandParam
 {

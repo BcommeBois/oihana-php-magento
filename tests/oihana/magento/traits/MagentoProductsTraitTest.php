@@ -19,6 +19,7 @@ use oihana\magento\MagentoClient;
 use oihana\magento\enums\Magento;
 use oihana\magento\enums\MagentoParam;
 use oihana\magento\enums\SearchCriteriaParam;
+use oihana\magento\schema\Product;
 use oihana\magento\utils\Fields;
 use oihana\magento\utils\SearchCriteria;
 
@@ -149,6 +150,26 @@ class MagentoProductsTraitTest extends TestCase
         $query = urldecode( $this->lastRequest()->getUri()->getQuery() ) ;
 
         $this->assertStringContainsString( 'fields=items[sku,name],total_count' , $query ) ;
+    }
+
+    /**
+     * When a `schema` is provided, only the envelope's `items` are hydrated
+     * into instances; the rest of the envelope (e.g. `total_count`) is left
+     * untouched. Mapping over the whole envelope would feed `hydrate()` an
+     * int and raise a TypeError.
+     */
+    public function testGetProductsHydratesOnlyItemsWhenSchemaProvided() : void
+    {
+        $client = $this->makeClient
+        (
+            [ new Response( 200 , [] , '{"items":[{"sku":"A"},{"sku":"B"}],"total_count":2}' ) ]
+        ) ;
+
+        $result = $client->getProducts( [ MagentoParam::SCHEMA => Product::class ] ) ;
+
+        $this->assertContainsOnlyInstancesOf( Product::class , $result[ 'items' ] ) ;
+        $this->assertSame( 'A' , $result[ 'items' ][ 0 ]->sku ) ;
+        $this->assertSame( 2 , $result[ 'total_count' ] ) ;
     }
 
     /**

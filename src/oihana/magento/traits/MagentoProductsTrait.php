@@ -109,9 +109,15 @@ trait MagentoProductsTrait
 
         $documents = $this->execute( $endpoint , HttpMethod::GET , $options );
 
-        if( isset( $schema ) && is_array( $documents ) )
+        // Magento wraps the product list in an envelope { items, search_criteria, total_count }.
+        // Only the `items` array holds product documents to hydrate.
+        if ( isset( $schema ) && isset( $documents[ MagentoParam::ITEMS ] ) && is_array( $documents[ MagentoParam::ITEMS ] ) )
         {
-            $documents = array_map( fn( $document ) => $this->hydrate( $document , $schema ) , $documents ) ;
+            $documents[ MagentoParam::ITEMS ] = array_map
+            (
+                fn( $document ) => $this->hydrate( $document , $schema ) ,
+                $documents[ MagentoParam::ITEMS ]
+            ) ;
         }
 
         return $documents ;
