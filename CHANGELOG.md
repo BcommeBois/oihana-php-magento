@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Coverage tooling: composer `coverage` and `coverage:md` scripts plus `tools/clover-to-markdown.php` (PHPUnit Clover → Markdown summary under `build/coverage/`), matching the other `oihana/php-*` libraries. Current line coverage: 96.80% (212/219).
+- Continuous integration: GitHub Actions `ci.yml` (composer validate + PHPUnit on PHP 8.4) and `docs.yml` (phpDocumentor build + GitHub Pages deploy) workflows.
+
 ### Changed
 
 - Dependencies: replaced `oihana/php-system` with the focused `oihana/php-logging` package. `php-magento` only consumes the `oihana\logging\LoggerTrait`, so this drops the heavy Slim/Twig/Symfony stack that `php-system` pulled in. No code or public-API change.
