@@ -215,7 +215,7 @@ trait MagentoClientTrait
                     {
                         $waitTime = pow(2, $attempts);
                         $this->notice( sprintf( "⏳ Waiting %d before retry..." , $waitTime ) ) ;
-                        sleep( $waitTime ) ;
+                        $this->waitBeforeRetry( $waitTime ) ;
                         continue;
                     }
                 }
@@ -226,7 +226,11 @@ trait MagentoClientTrait
             }
         }
 
+        // @codeCoverageIgnoreStart
+        // The while loop always returns inside its body; this final return only satisfies
+        // the ?array return type and is never reached at runtime.
         return null;
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -264,6 +268,23 @@ trait MagentoClientTrait
     public function isConnected( string $endpoint = 'modules' ):bool
     {
         return $this->execute( $endpoint ) !== null ;
+    }
+
+    // ----------- Protected
+
+    /**
+     * Waits for the given number of seconds between retry attempts.
+     *
+     * Isolated in its own method so the exponential-backoff delay can be overridden
+     * (e.g. made instantaneous) by subclasses and tests, without changing the retry logic.
+     *
+     * @param int $seconds The number of seconds to wait.
+     *
+     * @return void
+     */
+    protected function waitBeforeRetry( int $seconds ):void
+    {
+        sleep( $seconds ) ;
     }
 
     // ----------- Private

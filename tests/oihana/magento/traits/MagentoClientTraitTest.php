@@ -21,6 +21,22 @@ use oihana\magento\MagentoClient;
 use oihana\magento\enums\Magento;
 
 /**
+ * Test double exposing the retry backoff as an instant, observable no-op,
+ * so the 5xx retry path can be covered without a real `sleep()`.
+ */
+class RecordingMagentoClient extends MagentoClient
+{
+    /** @var int Total number of seconds the client was asked to wait between retries. */
+    public int $waited = 0 ;
+
+    protected function waitBeforeRetry( int $seconds ) : void
+    {
+        $this->waited += $seconds ;
+        parent::waitBeforeRetry( 0 ) ; // exercise the real seam instantly (sleep(0))
+    }
+}
+
+/**
  * Unit coverage for {@see \oihana\magento\traits\MagentoClientTrait}.
  *
  * The HTTP transport is replaced by a Guzzle {@see MockHandler} injected
@@ -225,5 +241,47 @@ class MagentoClientTraitTest extends TestCase
         ) ;
 
         $this->assertFalse( $client->isConnected() ) ;
+    }
+
+    /**
+     * A retryable 5xx must trigger the exponential-backoff path (`waitBeforeRetry()`
+     * then `continue`) until `maxRetries` is exhausted, after which `execute()`
+     * returns null. The backoff is observed through {@see RecordingMagentoClient}
+     * so the test stays instant.
+     */
+    public function testServerErrorRetriesWithBackoffThenGivesUp() : void
+    {
+        $stack = HandlerStack::create( new MockHandler
+        (
+            [
+                new Response( 503 , [] , 'unavailable' ) ,
+                new Response( 503 , [] , 'unavailable' ) ,
+            ]
+        ) ) ;
+
+        $client = new RecordingMagentoClient
+        (
+            new Container() ,
+            [
+                Magento::BASE_URI    => self::BASE_URI ,
+                Magento::HANDLER     => $stack ,
+                Magento::MAX_RETRIES => 2 ,
+            ]
+        ) ;
+
+        $this->assertNull( $client->call( 'products' , HttpMethod::GET ) ) ;
+        $this->assertGreaterThan( 0 , $client->waited , 'the exponential-backoff retry path must have run' ) ;
+    }
+
+    /**
+     * A non-2xx response that Guzzle does not raise as an exception (here a `304`,
+     * which is neither an error nor a followed redirect) must hit the defensive
+     * branch that logs the status and returns null.
+     */
+    public function testNonSuccessStatusWithoutExceptionReturnsNull() : void
+    {
+        $client = $this->makeClient( [ new Response( 304 , [] , '' ) ] ) ;
+
+        $this->assertNull( $client->call( 'products/ABC' , HttpMethod::GET ) ) ;
     }
 }

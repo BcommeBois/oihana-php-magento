@@ -9,12 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Coverage tooling: composer `coverage` and `coverage:md` scripts plus `tools/clover-to-markdown.php` (PHPUnit Clover → Markdown summary under `build/coverage/`), matching the other `oihana/php-*` libraries. Current line coverage: 96.80% (212/219).
+- Coverage tooling: composer `coverage` and `coverage:md` scripts plus `tools/clover-to-markdown.php` (PHPUnit Clover → Markdown summary under `build/coverage/`), matching the other `oihana/php-*` libraries. Line coverage is now **100% (219/219)**.
 - Continuous integration: GitHub Actions `ci.yml` (composer validate + PHPUnit on PHP 8.4) and `docs.yml` (phpDocumentor build + GitHub Pages deploy) workflows.
 
 ### Changed
 
 - Dependencies: replaced `oihana/php-system` with the focused `oihana/php-logging` package. `php-magento` only consumes the `oihana\logging\LoggerTrait`, so this drops the heavy Slim/Twig/Symfony stack that `php-system` pulled in. No code or public-API change.
+- `MagentoClientTrait`: the exponential-backoff delay is now isolated in an overridable `protected waitBeforeRetry()` method (behaviour unchanged — it still calls `sleep()`), so the 5xx retry path can be unit-tested without a real delay. New tests cover the retry/backoff and the non-2xx-without-exception branches, bringing the trait — and the whole library — to 100% line coverage.
 
 ## [0.1.0] - 2026-05-31
 
