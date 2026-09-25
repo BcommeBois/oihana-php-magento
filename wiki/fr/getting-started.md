@@ -65,6 +65,36 @@ $product = $client->getProduct( 'SKU-12345' ) ;
 print_r( $product ) ;
 ```
 
+## Erreurs
+
+Un appel qui échoue **lève toujours une exception** ; il ne renvoie jamais `null` pour dire « échec ».
+Seule une réponse au corps vide (`204`) renvoie `null`. On distingue ainsi un résultat vide d'une panne :
+un appelant qui retire ce qu'il n'a pas reçu ne doit jamais prendre une panne pour une liste vide.
+
+| Exception | Quand |
+|---|---|
+| `Error401` | secrets OAuth1 refusés — jamais réessayé |
+| `Error404` | ressource inconnue — jamais réessayé |
+| `MagentoRequestException` | tout autre échec définitif : essais épuisés, autre statut `4xx`, statut non `2xx`, corps JSON illisible. `getCode()` donne le statut HTTP, ou `MagentoRequestException::NO_RESPONSE` (`0`) quand aucune réponse n'est arrivée ; l'exception de Guzzle est chaînée en `getPrevious()` |
+
+Sont réessayés, jusqu'à `Magento::MAX_RETRIES` essais avec une pause qui double (2 s, 4 s…) : l'absence
+de réponse (délai dépassé, connexion refusée), `429`, `500`, `502`, `503` et `504`.
+
+```php
+use oihana\magento\exceptions\MagentoRequestException ;
+
+try
+{
+    $page = $client->getProducts( [ MagentoParam::SEARCH_CRITERIA => $criteria ] ) ;
+}
+catch ( MagentoRequestException $e )
+{
+    // Magento n'a pas répondu correctement : ne rien conclure sur le catalogue.
+    $logger->error( $e->getMessage() , [ 'status' => $e->getCode() ] ) ;
+    throw $e ;
+}
+```
+
 ## Et après ?
 
 - Pour **lister des produits avec filtres + pagination**, lire la page [SearchCriteria](search-criteria.md).
@@ -78,7 +108,8 @@ print_r( $product ) ;
 | `Error401` à chaque appel | Au moins un des 4 secrets OAuth1 est faux ou périmé. Régénérer dans le back-office Magento. |
 | `Error404` sur un endpoint qui existe | `baseUri` mal réglé. Vérifier le suffixe `/rest/V1/` (pas `/rest/V2/` ni `/api/rest/`). |
 | Réponse vide alors que le produit existe | L'utilisateur admin associé à l'intégration n'a pas les permissions `Catalog > Products`. Élargir le scope dans l'intégration. |
-| Timeout sur de gros listings | Augmenter `Magento::MAX_RETRIES` ou paginer plus finement via `SearchCriteria::setPageSize()`. |
+| Délai dépassé sur de gros listings | Le délai dépassé est réessayé, puis lève `MagentoRequestException` (code `0`). Augmenter `Magento::MAX_RETRIES` ou paginer plus finement via `SearchCriteria::setPageSize()`. |
+| `MagentoRequestException` | Magento n'a pas répondu correctement après les essais. Lire `getCode()` (statut HTTP, `0` = aucune réponse) et `getPrevious()`. |
 
 ## Voir aussi
 

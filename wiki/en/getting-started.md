@@ -65,6 +65,36 @@ $product = $client->getProduct( 'SKU-12345' ) ;
 print_r( $product ) ;
 ```
 
+## Errors
+
+A failing call **always throws**; it never answers `null` to mean "failure". Only a response with an
+empty body (`204`) returns `null`. This tells an empty result apart from an outage: a caller that
+removes whatever it did not receive must never mistake an outage for an empty list.
+
+| Exception | When |
+|---|---|
+| `Error401` | OAuth1 secrets rejected — never retried |
+| `Error404` | unknown resource — never retried |
+| `MagentoRequestException` | any other final failure: retries exhausted, another `4xx` status, a non-`2xx` status, an unreadable JSON body. `getCode()` returns the HTTP status, or `MagentoRequestException::NO_RESPONSE` (`0`) when no response arrived; the Guzzle exception is chained as `getPrevious()` |
+
+Retried, up to `Magento::MAX_RETRIES` attempts with a doubling pause (2 s, 4 s…): no response at all
+(timeout, refused connection), `429`, `500`, `502`, `503` and `504`.
+
+```php
+use oihana\magento\exceptions\MagentoRequestException ;
+
+try
+{
+    $page = $client->getProducts( [ MagentoParam::SEARCH_CRITERIA => $criteria ] ) ;
+}
+catch ( MagentoRequestException $e )
+{
+    // Magento did not answer properly: conclude nothing about the catalog.
+    $logger->error( $e->getMessage() , [ 'status' => $e->getCode() ] ) ;
+    throw $e ;
+}
+```
+
 ## What's next?
 
 - To **list products with filters + pagination**, read the [SearchCriteria](search-criteria.md) page.
@@ -78,7 +108,8 @@ print_r( $product ) ;
 | `Error401` on every call | At least one of the 4 OAuth1 secrets is wrong or expired. Regenerate in the Magento back-office. |
 | `Error404` on an endpoint that exists | `baseUri` misconfigured. Check the `/rest/V1/` suffix (not `/rest/V2/` nor `/api/rest/`). |
 | Empty response while the product exists | The admin user associated with the integration lacks `Catalog > Products` permissions. Widen the scope in the integration. |
-| Timeout on large listings | Increase `Magento::MAX_RETRIES` or paginate with smaller pages through `SearchCriteria::setPageSize()`. |
+| Timeout on large listings | A timeout is retried, then throws `MagentoRequestException` (code `0`). Increase `Magento::MAX_RETRIES` or paginate with smaller pages through `SearchCriteria::setPageSize()`. |
+| `MagentoRequestException` | Magento did not answer properly once the retries were spent. Read `getCode()` (HTTP status, `0` = no response) and `getPrevious()`. |
 
 ## See also
 

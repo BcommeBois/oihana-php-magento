@@ -17,6 +17,7 @@ use oihana\magento\enums\ConditionType;
 use oihana\magento\enums\MagentoOption;
 use oihana\magento\enums\MagentoParam;
 use oihana\magento\enums\SearchCriteriaParam;
+use oihana\magento\exceptions\MagentoRequestException;
 use oihana\magento\utils\Fields;
 use oihana\magento\utils\SearchCriteria;
 
@@ -43,6 +44,7 @@ trait MagentoProductsTrait
      * @throws Error401
      * @throws Error404
      * @throws GuzzleException
+     * @throws MagentoRequestException When the request finally fails.
      * @throws RandomException
      * @throws ReflectionException
      */
@@ -78,6 +80,7 @@ trait MagentoProductsTrait
      * @throws Error401
      * @throws Error404
      * @throws GuzzleException
+     * @throws MagentoRequestException When the request finally fails.
      * @throws RandomException
      * @throws ReflectionException
      */
@@ -138,6 +141,7 @@ trait MagentoProductsTrait
      * @throws Error401
      * @throws Error404
      * @throws GuzzleException
+     * @throws MagentoRequestException When the request finally fails.
      * @throws RandomException
      * @throws ReflectionException
      * @throws DateInvalidTimeZoneException

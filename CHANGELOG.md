@@ -7,15 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+> **Breaking (0.x → next release 0.2.0):** a Magento call that finally fails now throws
+> `MagentoRequestException` instead of returning `null`. Migrate every `=== null` failure check to a
+> `catch ( MagentoRequestException $e )`. A response with an empty body (`204`) still returns `null`.
+
 ### Added
 
-- Coverage tooling: composer `coverage` and `coverage:md` scripts plus `tools/clover-to-markdown.php` (PHPUnit Clover → Markdown summary under `build/coverage/`), matching the other `oihana/php-*` libraries. Line coverage is now **100% (219/219)**.
+- `exceptions/MagentoRequestException` — thrown on every final failure of a Magento call (retries exhausted, non-retryable status, non-`2xx` response, unreadable JSON body). `getCode()` carries the HTTP status, or `MagentoRequestException::NO_RESPONSE` (`0`) when no response arrived; the transport exception is chained as the previous one.
+- `MagentoClientTrait::isRetryable()` — protected, overridable: the rule deciding whether a failed attempt is retried.
+- `MagentoProp::ENTITY_ID` (`entity_id`) — the product primary key, the stable field to sort a paginated product listing on.
+- Coverage tooling: composer `coverage` and `coverage:md` scripts plus `tools/clover-to-markdown.php` (PHPUnit Clover → Markdown summary under `build/coverage/`), matching the other `oihana/php-*` libraries. Line coverage is now **100% (248/248)**.
 - Continuous integration: GitHub Actions `ci.yml` (composer validate + PHPUnit on PHP 8.4) and `docs.yml` (phpDocumentor build + GitHub Pages deploy) workflows.
 
 ### Changed
 
+- **Breaking** — `MagentoClientTrait::execute()` (and therefore `call()`, `getProduct()`, `getProducts()`, `getProductsSince()`) throws `MagentoRequestException` on a final failure instead of returning `null`. A `null` could not tell "Magento has nothing" apart from "Magento did not answer": a caller walking every page read an outage as the end of the list, and a caller removing what it did not receive deleted data at the first outage. `401` and `404` keep throwing `Error401` and `Error404`.
+- `MagentoClientTrait::isConnected()` keeps its contract: it catches `MagentoRequestException` and returns `false`.
 - Dependencies: replaced `oihana/php-system` with the focused `oihana/php-logging` package. `php-magento` only consumes the `oihana\logging\LoggerTrait`, so this drops the heavy Slim/Twig/Symfony stack that `php-system` pulled in. No code or public-API change.
 - `MagentoClientTrait`: the exponential-backoff delay is now isolated in an overridable `protected waitBeforeRetry()` method (behaviour unchanged — it still calls `sleep()`), so the 5xx retry path can be unit-tested without a real delay. New tests cover the retry/backoff and the non-2xx-without-exception branches, bringing the trait — and the whole library — to 100% line coverage.
+
+### Fixed
+
+- `MagentoClientTrait::execute()` — a connection failure (timeout, refused connection, unknown host) is now retried. Guzzle 7 raises it as a `ConnectException`, which is not a `RequestException`: it escaped the retry loop untouched, and the `timeout` retry branch never ran.
+- `MagentoClientTrait::execute()` — `429 Too Many Requests` is now retried like the `5xx` server errors.
+- `MagentoClientTrait::execute()` — the final failure log gives the actual number of attempts; a non-retryable error used to report `maxRetries` attempts after a single one.
+- `MagentoClientTrait::execute()` — a success status with an unreadable JSON body throws instead of silently decoding to `null`.
 
 ## [0.1.0] - 2026-05-31
 

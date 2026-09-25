@@ -19,6 +19,7 @@ use oihana\magento\MagentoClient;
 use oihana\magento\enums\Magento;
 use oihana\magento\enums\MagentoParam;
 use oihana\magento\enums\SearchCriteriaParam;
+use oihana\magento\exceptions\MagentoRequestException;
 use oihana\magento\schema\Product;
 use oihana\magento\schema\ProductImage;
 use oihana\magento\utils\Fields;
@@ -218,6 +219,24 @@ class MagentoProductsTraitTest extends TestCase
 
         $this->assertSame( 1 , $result[ 'total_count' ] ) ;
         $this->assertSame( 'A' , $result[ 'items' ][ 0 ][ 'sku' ] ) ;
+    }
+
+    /**
+     * A page that finally fails must throw instead of answering null: a caller
+     * that walks every page would otherwise read the outage as the end of the list.
+     */
+    public function testGetProductsThrowsWhenTheRequestFinallyFails() : void
+    {
+        $client = $this->makeClient
+        (
+            [ new Response( 503 , [] , 'unavailable' ) ] ,
+            [ Magento::MAX_RETRIES => 1 ]
+        ) ;
+
+        $this->expectException( MagentoRequestException::class ) ;
+        $this->expectExceptionCode( 503 ) ;
+
+        $client->getProducts( [ MagentoParam::SEARCH_CRITERIA => [ SearchCriteriaParam::PAGE_SIZE => 500 ] ] ) ;
     }
 
     /**
