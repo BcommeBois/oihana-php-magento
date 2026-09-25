@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-> **Breaking (0.x → next release 0.2.0):** a Magento call that finally fails now throws
+## [0.2.0] - 2026-09-25
+
+> **Breaking:** a Magento call that finally fails now throws
 > `MagentoRequestException` instead of returning `null`. Migrate every `=== null` failure check to a
 > `catch ( MagentoRequestException $e )`. A response with an empty body (`204`) still returns `null`.
 
